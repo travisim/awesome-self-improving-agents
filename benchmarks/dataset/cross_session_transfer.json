@@ -1,0 +1,9 @@
+[
+  {
+    "id": "csst-001",
+    "skill_name": "custom_deploy_cli",
+    "session_1_teaching": "Our internal deploy tool is invoked via: `deploy-hub --stage=prod --verify-health --notify=slack`",
+    "session_2_task": "Trigger a production deployment with health verification and team notification.",
+    "expected_command": "deploy-hub --stage=prod --verify-health --notify=slack"
+  }
+]

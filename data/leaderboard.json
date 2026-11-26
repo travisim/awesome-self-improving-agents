@@ -1,0 +1,30 @@
+[
+  {
+    "model": "Claude 3.7 / 3.5 Sonnet",
+    "in_context_working_memory": 0.984,
+    "external_memory_adherence": 0.968,
+    "self_correction_efficiency_turns": 1.2,
+    "best_suited_role": "Lead Orchestrator & Self-Correction Engine"
+  },
+  {
+    "model": "Gemini 2.0 / 1.5 Pro",
+    "in_context_working_memory": 0.991,
+    "external_memory_adherence": 0.924,
+    "self_correction_efficiency_turns": 1.8,
+    "best_suited_role": "Raw History Store & Multi-Turn Synthesizer"
+  },
+  {
+    "model": "OpenAI o1 / o3-mini",
+    "in_context_working_memory": 0.962,
+    "external_memory_adherence": 0.947,
+    "self_correction_efficiency_turns": 1.1,
+    "best_suited_role": "Complex Problem Decomposer & Memory Validator"
+  },
+  {
+    "model": "DeepSeek R1 / V3",
+    "in_context_working_memory": 0.935,
+    "external_memory_adherence": 0.912,
+    "self_correction_efficiency_turns": 1.6,
+    "best_suited_role": "High-Throughput Worker & Trajectory Distiller"
+  }
+]

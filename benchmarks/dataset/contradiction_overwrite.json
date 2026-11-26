@@ -1,0 +1,29 @@
+[
+  {
+    "id": "cof-001",
+    "topic": "Database Configuration",
+    "turn_initial": "We are using Postgres 15 for our backend database on port 5432.",
+    "turn_update": "We just migrated our entire backend to CockroachDB running on port 26257.",
+    "query": "What database and port should the new backend service connect to?",
+    "expected_answer": "CockroachDB on port 26257",
+    "stale_trap": "Postgres on port 5432"
+  },
+  {
+    "id": "cof-002",
+    "topic": "Authentication Strategy",
+    "turn_initial": "For user auth, we use JWT tokens stored in localStorage.",
+    "turn_update": "Due to XSS security requirements, we have switched to httpOnly SameSite secure cookies.",
+    "query": "Where should the frontend client expect authentication tokens to be stored?",
+    "expected_answer": "httpOnly SameSite secure cookies",
+    "stale_trap": "localStorage"
+  },
+  {
+    "id": "cof-003",
+    "topic": "Cloud Provider Target",
+    "turn_initial": "Deploy our serverless functions to AWS Lambda using us-east-1.",
+    "turn_update": "Due to cost credits, all new serverless functions must be deployed to Google Cloud Run in us-central1.",
+    "query": "Which cloud service and region should the deployment script target?",
+    "expected_answer": "Google Cloud Run in us-central1",
+    "stale_trap": "AWS Lambda in us-east-1"
+  }
+]

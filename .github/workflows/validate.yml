@@ -1,0 +1,19 @@
+name: Validate Benchmarks & Datasets
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate Datasets & Run Evaluator
+        run: |
+          python3 benchmarks/runner/eval_memory.py --dry-run

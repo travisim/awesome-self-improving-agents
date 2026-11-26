@@ -1,0 +1,18 @@
+[
+  {
+    "id": "nims-001",
+    "needle": "CRITICAL_SYSTEM_FLAG: disable_automatic_fallback=true",
+    "injected_turn": 14,
+    "total_turns": 100,
+    "query": "What was the exact value of the CRITICAL_SYSTEM_FLAG established earlier?",
+    "expected_value": "disable_automatic_fallback=true"
+  },
+  {
+    "id": "nims-002",
+    "needle": "SECRET_DEVOPS_PORT: 8443",
+    "injected_turn": 32,
+    "total_turns": 100,
+    "query": "Which port was designated for the internal DevOps dashboard?",
+    "expected_value": "8443"
+  }
+]
