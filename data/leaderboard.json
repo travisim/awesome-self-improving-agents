@@ -1,30 +1,81 @@
-[
-  {
-    "model": "Claude 3.7 / 3.5 Sonnet",
-    "in_context_working_memory": 0.984,
-    "external_memory_adherence": 0.968,
-    "self_correction_efficiency_turns": 1.2,
-    "best_suited_role": "Lead Orchestrator & Self-Correction Engine"
-  },
-  {
-    "model": "Gemini 2.0 / 1.5 Pro",
-    "in_context_working_memory": 0.991,
-    "external_memory_adherence": 0.924,
-    "self_correction_efficiency_turns": 1.8,
-    "best_suited_role": "Raw History Store & Multi-Turn Synthesizer"
-  },
-  {
-    "model": "OpenAI o1 / o3-mini",
-    "in_context_working_memory": 0.962,
-    "external_memory_adherence": 0.947,
-    "self_correction_efficiency_turns": 1.1,
-    "best_suited_role": "Complex Problem Decomposer & Memory Validator"
-  },
-  {
-    "model": "DeepSeek R1 / V3",
-    "in_context_working_memory": 0.935,
-    "external_memory_adherence": 0.912,
-    "self_correction_efficiency_turns": 1.6,
-    "best_suited_role": "High-Throughput Worker & Trajectory Distiller"
-  }
-]
+{
+  "schema_version": 2,
+  "verification": "community-reported-unverified",
+  "methodology": null,
+  "notes": "No entry here was produced by this repository's harness. Numeric fields are null until a reproducible run (harness + config + logs) is submitted. 'reported_qualitative' captures informal community impressions only and must never be presented as a measurement.",
+  "admission_rule": "A model row may set reproduced=true only when it links a harness, a config file, and archived logs for >=3 seeds.",
+  "models": [
+    {
+      "model": "Claude Sonnet family",
+      "verification": "unverified",
+      "reproduced": false,
+      "reported_qualitative": {
+        "working_memory_retention": "reported high",
+        "external_memory_adherence": "reported high",
+        "self_correction": "reported low iteration count"
+      },
+      "in_context_working_memory": null,
+      "external_memory_adherence": null,
+      "self_correction_efficiency_turns": null,
+      "best_suited_role": "Orchestration and critique",
+      "harness": null,
+      "config": null,
+      "logs": null,
+      "source": "community-reported"
+    },
+    {
+      "model": "Gemini Pro family",
+      "verification": "unverified",
+      "reproduced": false,
+      "reported_qualitative": {
+        "working_memory_retention": "reported high over large contexts",
+        "external_memory_adherence": "reported medium",
+        "self_correction": "reported medium"
+      },
+      "in_context_working_memory": null,
+      "external_memory_adherence": null,
+      "self_correction_efficiency_turns": null,
+      "best_suited_role": "Long-history synthesis",
+      "harness": null,
+      "config": null,
+      "logs": null,
+      "source": "community-reported"
+    },
+    {
+      "model": "OpenAI o-series",
+      "verification": "unverified",
+      "reproduced": false,
+      "reported_qualitative": {
+        "working_memory_retention": "reported high",
+        "external_memory_adherence": "reported high",
+        "self_correction": "reported low iteration count"
+      },
+      "in_context_working_memory": null,
+      "external_memory_adherence": null,
+      "self_correction_efficiency_turns": null,
+      "best_suited_role": "Decomposition and verification",
+      "harness": null,
+      "config": null,
+      "logs": null,
+      "source": "community-reported"
+    },
+    {
+      "model": "DeepSeek R/V family",
+      "verification": "unverified",
+      "reproduced": false,
+      "reported_qualitative": {
+        "working_memory_retention": "reported medium",
+        "external_memory_adherence": "reported medium",
+        "self_correction": "reported medium"
+      },
+      "in_context_working_memory": null,
+      "external_memory_adherence": null,
+      "self_correction_efficiency_turns": null,
+      "best_suited_role": "High-throughput workers",
+      "harness": null,
+      "config": null,
+      "logs": null,
+      "source": "community-reported"
+    }
+  ]
+}

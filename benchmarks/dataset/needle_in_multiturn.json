@@ -14,5 +14,29 @@
     "total_turns": 100,
     "query": "Which port was designated for the internal DevOps dashboard?",
     "expected_value": "8443"
+  },
+  {
+    "id": "nims-003",
+    "needle": "MAX_UPLOAD_SIZE_MB: 25",
+    "injected_turn": 6,
+    "total_turns": 20,
+    "query": "What is the maximum allowed upload size for the asset endpoint?",
+    "expected_value": "25 MB"
+  },
+  {
+    "id": "nims-004",
+    "needle": "RETRY_BACKOFF_BASE_SECONDS: 1.7",
+    "injected_turn": 21,
+    "total_turns": 50,
+    "query": "What base delay did we agree on for exponential backoff between retries?",
+    "expected_value": "1.7 seconds"
+  },
+  {
+    "id": "nims-005",
+    "needle": "AUDIT_LOG_RETENTION_DAYS: 395",
+    "injected_turn": 78,
+    "total_turns": 100,
+    "query": "How long must audit logs be retained before deletion?",
+    "expected_value": "395 days"
   }
 ]

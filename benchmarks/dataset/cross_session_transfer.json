@@ -5,5 +5,19 @@
     "session_1_teaching": "Our internal deploy tool is invoked via: `deploy-hub --stage=prod --verify-health --notify=slack`",
     "session_2_task": "Trigger a production deployment with health verification and team notification.",
     "expected_command": "deploy-hub --stage=prod --verify-health --notify=slack"
+  },
+  {
+    "id": "csst-002",
+    "skill_name": "log_triage",
+    "session_1_teaching": "To triage warnings from the last hour, run `logtriage --since=1h --level=warn --json | jq -r '.msg'`.",
+    "session_2_task": "Pull all warning-level messages from the past hour so I can scan them.",
+    "expected_command": "logtriage --since=1h --level=warn --json | jq -r '.msg'"
+  },
+  {
+    "id": "csst-003",
+    "skill_name": "encrypted_db_snapshot",
+    "session_1_teaching": "Production backups use `backupctl snapshot --db=prod --retain=7d --encrypt=kms`; never use the default unencrypted mode.",
+    "session_2_task": "Take a production database backup with a one-week retention and encryption.",
+    "expected_command": "backupctl snapshot --db=prod --retain=7d --encrypt=kms"
   }
 ]

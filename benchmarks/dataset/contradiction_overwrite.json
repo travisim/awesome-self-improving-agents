@@ -25,5 +25,41 @@
     "query": "Which cloud service and region should the deployment script target?",
     "expected_answer": "Google Cloud Run in us-central1",
     "stale_trap": "AWS Lambda in us-east-1"
+  },
+  {
+    "id": "cof-004",
+    "topic": "Scheduler Timezone",
+    "turn_initial": "All cron jobs are scheduled in America/New_York local time.",
+    "turn_update": "After the DST incident, every cron job must be scheduled in UTC regardless of team location.",
+    "query": "Which timezone must the scheduler use for the new job definition?",
+    "expected_answer": "UTC",
+    "stale_trap": "America/New_York"
+  },
+  {
+    "id": "cof-005",
+    "topic": "Package Manager",
+    "turn_initial": "Install dependencies with npm in CI.",
+    "turn_update": "We migrated the monorepo to pnpm workspaces last sprint; npm is no longer allowed because it bypasses the lockfile policy.",
+    "query": "Which package manager should the CI install step invoke?",
+    "expected_answer": "pnpm",
+    "stale_trap": "npm"
+  },
+  {
+    "id": "cof-006",
+    "topic": "Model Provider Routing",
+    "turn_initial": "Summarize support tickets with OpenAI gpt-4o.",
+    "turn_update": "Compliance now requires all ticket summarization to run through Azure OpenAI in the EU region; direct OpenAI calls are prohibited.",
+    "query": "Which provider and region should handle ticket summarization?",
+    "expected_answer": "Azure OpenAI in the EU region",
+    "stale_trap": "OpenAI gpt-4o"
+  },
+  {
+    "id": "cof-007",
+    "topic": "Upstream Rate Limit",
+    "turn_initial": "The upstream API allows 1000 requests per minute.",
+    "turn_update": "The provider reduced our quota to 120 requests per minute and now returns 429; we must honor 120 with exponential backoff.",
+    "query": "What request rate and error handling should the client implement?",
+    "expected_answer": "120 requests per minute with exponential backoff",
+    "stale_trap": "1000 requests per minute"
   }
 ]

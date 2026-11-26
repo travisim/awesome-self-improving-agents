@@ -1,14 +1,15 @@
 <div align="center">
 
-# 🧠 Awesome Agent Memory & Self-Learning
+# 🔁 Awesome Self-Improving Agents
 
-**The Curated Taxonomy, Framework Registry, and Benchmark Suite for Autonomous Agent Memory & Continual Learning**
+**A curated map, framework registry, and benchmark suite for AI agents that actually get better over time.**
 
 [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Validate](https://github.com/travisim/awesome-self-improving-agents/actions/workflows/validate.yml/badge.svg)](https://github.com/travisim/awesome-self-improving-agents/actions/workflows/validate.yml)
 
-[Taxonomy](#-memory-shapes--taxonomy) • [Frameworks](#-memory-frameworks--engines) • [Self-Learning](#-self-learning-mechanisms) • [Benchmarks](#-benchmarks--evaluations) • [Model Leaderboard](#-model-memory--learning-leaderboard) • [Contributing](CONTRIBUTING.md)
+[Definition](#-what-counts-as-self-improvement) • [The Loop](#-the-improvement-loop) • [Pillars](#-the-five-pillars) • [Frameworks](#-framework-registry) • [Papers](#-research-index) • [Benchmarks](#-benchmarks) • [Roadmap](#-roadmap--good-first-issues) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -16,112 +17,232 @@
 
 ## 📌 Why This Exists
 
-Autonomous AI agents face two fundamental cognitive bottlenecks:
-1. **The Goldfish Problem (State Amnesia):** Standard LLM agents forget context across sessions or rely on naive semantic search (dense embeddings) that retrieves irrelevant, stale, or contradictory conversation fragments.
-2. **The Static Agent Problem (Zero Compounding):** An agent repeating a complex multi-step task on Day 10 makes the exact same mistakes as on Day 1, unable to accumulate procedural skills or update its beliefs without costly fine-tuning.
+Most "agents" in production are **stateless functions with a chat history**. Ask one to fix the same class of bug it fixed last Tuesday and it starts from zero — same wrong assumptions, same failed tool calls, same rediscovery cost.
 
-This repository serves as the **open industry standard** for classifying agent memory architectures, benchmarking memory retention and update fidelity, and cataloging how modern agents learn from experience at test-time.
+Three bottlenecks keep agents from compounding:
+
+1. **Amnesia** — context is discarded at session end, or reduced to dense retrieval over raw transcripts that happily returns superseded facts.
+2. **No self-correction** — the agent retries the same failing action instead of diagnosing *why* it failed and changing strategy.
+3. **No skill accumulation** — successful trajectories are thrown away instead of compiled into reusable, callable procedures.
+
+**Memory is a subset of this problem.** Storing experience is table stakes; the hard part is *acting differently next time*. This repo is organized around that distinction: memory is Pillar 1 of 5, not the whole story.
 
 ---
 
-## 🏛️ Memory Shapes & Taxonomy
+## 🧭 What Counts as Self-Improvement
 
-Agent memory is not a monolithic vector database. Production architectures divide memory into four distinct functional tiers:
+An agent self-improves when its **policy for future tasks changes as a result of its own experience**, without a human relabeling the data.
+
+That definition has five axes. Most papers and frameworks differ mainly in *where* they sit on them:
+
+| Axis | Question | Options |
+| :--- | :--- | :--- |
+| **Signal source** | Where does the feedback come from? | Environment/verifier · LLM self-critique · human · reward model |
+| **Locus of update** | What actually changes? | Context window · external memory · prompt/program · tool library · model weights |
+| **Persistence** | How long does the improvement last? | Single turn · session · cross-session · across model versions |
+| **Supervision** | How much ground truth is needed? | Full labels · sparse tests · self-generated labels · none |
+| **Verifiability** | Can improvement be *proven*? | Executable tests · rubric judge · human eval · none (⚠️) |
+
+> ⚠️ Any claimed improvement without a verifier is a **vibe**, not a result. The benchmark section exists to make that distinction cheap to check.
+
+---
+
+## 🔄 The Improvement Loop
 
 ```mermaid
 flowchart TD
-    subgraph Agent Memory Architecture
-        WM["1. Working Memory (Active Buffer / Scratchpad)"]
-        EM["2. Episodic Memory (Experience & Conversation Logs)"]
-        SM["3. Semantic Memory (Entity-Relationship Graph / Knowledge)"]
-        PM["4. Procedural Memory (Skill Library & Reusable Routines)"]
-    end
+    T["Task / Environment"] --> A["Act: agent produces trajectory"]
+    A --> E{"Evaluate outcome"}
+    E -->|"fail"| R["Reflect: diagnose cause, write critique"]
+    E -->|"pass"| G{"Generalizable?"}
+    G -->|"yes"| S["Synthesize: compile into skill / prompt / memory"]
+    G -->|"no"| M["Store episode as-is"]
+    R --> M
+    M --> C["Consolidate: dedupe, resolve contradictions, prune"]
+    S --> C
+    C --> P["Update policy substrate<br/>(context · memory · tool registry · weights)"]
+    P --> T
 
-    WM --> |Context Consolidation / Summarization| EM
-    EM --> |Entity Extraction & Triple Linking| SM
-    EM --> |Trajectory Distillation of Successful Runs| PM
-
-    subgraph Storage Substrates
-        KV["KV-Cache / In-Context Prompt"]
-        VEC["Vector Store (Dense Retrieval)"]
-        KG["Knowledge Graph (GraphRAG / Triples)"]
-        SKILL["Code / Prompt Skill Registry"]
-    end
-
-    WM -.-> KV
-    EM -.-> VEC
-    SM -.-> KG
-    PM -.-> SKILL
+    classDef store fill:#eef6ff,stroke:#4a7fb5,color:#123
+    class M,C store
 ```
 
-* **Working Memory:** The active in-context attention window, short-term scratchpads, and execution buffers.
-* **Episodic Memory:** Chronologically indexed session transcripts, user interaction logs, and execution traces.
-* **Semantic Memory:** Associative knowledge graphs, entity relationships, and domain facts structured as triples `(Subject, Predicate, Object)`.
-* **Procedural Memory:** Compiled skill libraries, executable code tools, and synthesized prompt routines discovered from past task completions.
-
-👉 *Read the full specification in [docs/memory-shapes.md](docs/memory-shapes.md).*
+The loop is only closed if step **P** changes behavior on the *next* task. A retrieval system that returns the right memory but leaves the action distribution unchanged has closed nothing.
 
 ---
 
-## 🛠️ Memory Frameworks & Engines
+## 🏛️ The Five Pillars
 
-| Project | Stars | Primary Memory Shape | Storage Backend | Highlights |
-| :--- | :--- | :--- | :--- | :--- |
-| [**Letta** (formerly MemGPT)](https://github.com/letta-ai/letta) | 16k+ ⭐ | Hierarchical OS Memory | Postgres / SQLite | Treats LLM context as RAM; pages memory in and out of archival storage. |
-| [**Mem0**](https://github.com/mem0ai/mem0) | 26k+ ⭐ | Personalized Episodic & Semantic | Hybrid Vector + Graph | Multi-tenant user persona extraction, auto-updating facts. |
-| [**Zep**](https://github.com/getzep/zep) | 5k+ ⭐ | Temporal Knowledge Graph | Graph + Vector | Temporal graph memory; resolves entity facts across long conversation timelines. |
-| [**Cognee**](https://github.com/topoteretes/cognee) | 3k+ ⭐ | GraphRAG & Entity Triples | Neo4j / NetworkX / LanceDB | Deterministic graph pipelines for reliable memory recall. |
-| [**HippoRAG**](https://github.com/OSU-NLP-Group/HippoRAG) | 1.5k+ ⭐ | Neurobiology Hippocampal Graph | Knowledge Graph + Personalized PageRank | Mimics human hippocampal indexing for multi-hop associative recall. |
-| [**LangMem**](https://github.com/langchain-ai/langmem) | Core | In-Context & Long-term Episodic | LangGraph State | Native memory SDK for stateful LangGraph agents. |
+### 1. Memory — *remembering* → [docs/memory-shapes.md](docs/memory-shapes.md)
+Working, episodic, semantic (graph), and procedural memory; consolidation, contradiction resolution, and retrieval policy.
+*Necessary but not sufficient. Memory that never changes a decision is a database with extra steps.*
 
----
+### 2. Reflection — *diagnosing* → [docs/self-learning-mechanisms.md](docs/self-learning-mechanisms.md)
+Reflexion-style verbal reinforcement, Self-Refine iteration, and tool-grounded critique (CRITIC). Turns a failure signal into a portable natural-language lesson.
 
-## 🔄 Self-Learning Mechanisms
+### 3. Skill Synthesis — *compiling*
+When a trajectory finally succeeds, abstract it into a typed, callable tool with a docstring and an embedding description, then register it in procedural memory. (Voyager, ExpeL, CREATOR, ToolLLM, Agent Workflow Memory.)
 
-How agents improve performance without gradient updates or model retraining:
+### 4. Self-Verification — *checking*
+Test execution, unit tests, type checkers, formal verifiers, and LLM judges used as *gates* rather than vibes. Verifier quality upper-bounds improvement quality; a weak verifier rewards confident wrong answers.
 
-1. **Reflexion (Verbal Reinforcement):** Agents evaluate execution failures (e.g., failed tests, syntax errors), write natural-language critiques, and store them in episodic memory to condition future attempts.
-2. **Skill Library Accumulation (e.g., Voyager, ExpeL):** When an agent succeeds at a novel task, it abstracts the solution into a callable tool with TypeScript/Python typings and stores it in procedural memory.
-3. **Memory Consolidation & Pruning:** Background batch workers that reconcile contradictory memories, resolve outdated facts (e.g., changed API keys or user preferences), and consolidate redundant records.
+### 5. Parameter-Level Learning — *internalizing*
+When context and tools saturate, improvement has to land in weights: self-generated training data (STaR), self-play fine-tuning (SPIN), self-rewarding models, self-editing memory weights (SEAL), and open-ended search over agent code (ADAS, Gödel Agent, Darwin Gödel Machine).
 
-👉 *Read the full specification in [docs/self-learning-mechanisms.md](docs/self-learning-mechanisms.md).*
+👉 Full taxonomy and design trade-offs: **[docs/self-improvement-loop.md](docs/self-improvement-loop.md)**
 
 ---
 
-## 📊 Benchmarks & Evaluations
+## 🛠️ Framework Registry
 
-The repository includes a runnable test harness (`benchmarks/runner/eval_memory.py`) evaluating four critical dimensions:
+Star counts are pulled from the GitHub API and will drift — treat them as a rough activity signal, not a benchmark.
 
-1. **COF (Contradiction & Overwrite Fidelity):** Tests whether an agent updates its internal state when a past fact is contradicted (e.g., user changed preference).
-2. **NIMS (Needle-In-Multi-Turn-Session):** Measures retrieval accuracy for subtle constraints injected 20, 50, and 100 turns earlier.
-3. **CSST (Cross-Session Skill Transfer):** Measures whether an agent successfully retains and applies a custom procedural skill taught in Session 1 when prompted in Session 2.
-4. **VSCE (Verbal Self-Correction Efficiency):** Number of reflection iterations required to pass a failed execution feedback loop.
+### Memory & context substrates
+
+| Project | Stars | Memory shape | Storage | Why it's here |
+| :--- | ---: | :--- | :--- | :--- |
+| [**Mem0**](https://github.com/mem0ai/mem0) | 69.5k | Personalized episodic + semantic | Hybrid vector + graph | Multi-tenant fact extraction with automatic add/update/delete of memories. |
+| [**Cognee**](https://github.com/topoteretes/cognee) | 33.6k | GraphRAG + entity triples | Neo4j / LanceDB / NetworkX | Deterministic graph pipelines for repeatable recall. |
+| [**Letta**](https://github.com/letta-ai/letta) (ex-MemGPT) | 25.5k | Hierarchical OS-style memory | Postgres / SQLite | Treats the context window as RAM and pages state to archival storage. |
+| [**Zep**](https://github.com/getzep/zep) | 5.0k | Temporal knowledge graph | Graph + vector | Time-aware graph that resolves entity facts across long timelines. |
+| [**HippoRAG**](https://github.com/OSU-NLP-Group/HippoRAG) | 4.1k | Hippocampal indexing graph | KG + Personalized PageRank | Multi-hop associative recall inspired by memory consolidation. |
+| [**LangMem**](https://github.com/langchain-ai/langmem) | 1.8k | In-context + long-term episodic | LangGraph state | Memory SDK wired into stateful LangGraph agents. |
+
+### Improvement loops, skill libraries & agent scaffolds
+
+| Project | Stars | Improvement mechanism | Locus of update |
+| :--- | ---: | :--- | :--- |
+| [**OpenHands**](https://github.com/OpenHands/OpenHands) | 94.3k | Execution-feedback loop over real repos | Context + tools |
+| [**DSPy**](https://github.com/stanfordnlp/dspy) | 39.2k | Compiles prompts/programs against a metric | Prompt/program |
+| [**SWE-agent**](https://github.com/SWE-agent/SWE-agent) | 20.9k | ACI-tuned agent-computer interface | Tools + context |
+| [**Voyager**](https://github.com/MineDojo/Voyager) | 7.3k | Automatic curriculum + growing skill library | Tool library |
+| [**TextGrad**](https://github.com/zou-group/textgrad) | 3.8k | "Differentiation" via natural-language feedback | Prompt/program |
+| [**ExpeL**](https://github.com/LeapLabTHU/ExpeL) | 0.3k | Cross-task experience extraction into insights | Context + memory |
 
 ---
 
-## 🏆 Model Memory & Learning Leaderboard
+## 📚 Research Index
 
-Evaluated across standardized 100-turn agent interaction traces:
+Verified against the arXiv API. Grouped by **where the improvement lands**.
 
-| Model Family | In-Context Working Memory | External Memory Adherence | Self-Correction Efficiency | Best Suited Role |
+### Memory & retrieval
+
+| Paper | Year | Contribution |
+| :--- | ---: | :--- |
+| [MemGPT](https://arxiv.org/abs/2310.08560) | 2023 | OS-style virtual context management with paging. |
+| [Generative Agents](https://arxiv.org/abs/2304.03442) | 2023 | Memory stream + reflection + planning loop. |
+| [Mem0](https://arxiv.org/abs/2504.19413) | 2025 | Scalable long-term memory with extraction/update pipeline. |
+| [Zep](https://arxiv.org/abs/2501.13956) | 2025 | Temporal knowledge graph memory (Graphiti). |
+| [HippoRAG](https://arxiv.org/abs/2405.14831) | 2024 | Neurobiologically inspired long-term memory via PPR. |
+| [A-MEM](https://arxiv.org/abs/2502.12110) | 2025 | Zettelkasten-style agentic memory with link generation. |
+| [GraphRAG](https://arxiv.org/abs/2404.16130) | 2024 | Query-focused summarization over extracted entity graphs. |
+
+### Reflection & in-context learning
+
+| Paper | Year | Contribution |
+| :--- | ---: | :--- |
+| [Reflexion](https://arxiv.org/abs/2303.11366) | 2023 | Verbal reinforcement: store self-critiques, retry with them. |
+| [Self-Refine](https://arxiv.org/abs/2303.17651) | 2023 | Iterative self-feedback without extra training. |
+| [CRITIC](https://arxiv.org/abs/2305.11738) | 2023 | Self-correction grounded in external tools. |
+| [Agent Workflow Memory](https://arxiv.org/abs/2409.07429) | 2024 | Induces reusable workflows from past trajectories. |
+
+### Skill acquisition & tool synthesis
+
+| Paper | Year | Contribution |
+| :--- | ---: | :--- |
+| [Voyager](https://arxiv.org/abs/2305.16291) | 2023 | Open-ended embodied agent with a lifelong skill library. |
+| [ExpeL](https://arxiv.org/abs/2308.10144) | 2023 | Experience-based learning by extracting cross-task insights. |
+| [CREATOR](https://arxiv.org/abs/2305.14318) | 2023 | Tool creation separates abstract from concrete reasoning. |
+| [ToolLLM](https://arxiv.org/abs/2307.16789) | 2023 | Masters 16k+ real-world APIs via tool-use trajectories. |
+
+### Optimizing prompts & programs
+
+| Paper | Year | Contribution |
+| :--- | ---: | :--- |
+| [DSPy](https://arxiv.org/abs/2310.03714) | 2023 | Compiles declarative LM pipelines against a metric. |
+| [TextGrad](https://arxiv.org/abs/2406.07496) | 2024 | Backpropagates natural-language feedback through programs. |
+| [OPRO](https://arxiv.org/abs/2309.03409) | 2023 | LLMs as optimizers over natural-language instructions. |
+| [Promptbreeder](https://arxiv.org/abs/2309.16797) | 2023 | Self-referential prompt evolution. |
+| [STOP](https://arxiv.org/abs/2310.02304) | 2023 | Recursively self-improving code generation. |
+
+### Self-improving agents & open-ended search
+
+| Paper | Year | Contribution |
+| :--- | ---: | :--- |
+| [Gödel Agent](https://arxiv.org/abs/2410.04444) | 2024 | Self-referential framework that rewrites its own logic. |
+| [ADAS](https://arxiv.org/abs/2408.08435) | 2024 | Automated design/search over agentic systems. |
+| [Darwin Gödel Machine](https://arxiv.org/abs/2505.22954) | 2025 | Open-ended evolution of self-modifying agents. |
+
+### Parameter-level self-training
+
+| Paper | Year | Contribution |
+| :--- | ---: | :--- |
+| [STaR](https://arxiv.org/abs/2203.14465) | 2022 | Bootstraps reasoning from the model's own correct solutions. |
+| [Self-Rewarding LMs](https://arxiv.org/abs/2401.10020) | 2024 | Model generates and judges its own training signal. |
+| [SPIN](https://arxiv.org/abs/2401.01335) | 2024 | Self-play fine-tuning converts weak models to strong. |
+| [SEAL](https://arxiv.org/abs/2506.10943) | 2025 | Models generate their own finetuning data and update directives. |
+| [Absolute Zero](https://arxiv.org/abs/2505.03335) | 2025 | Self-play reasoning with zero external data. |
+| [Constitutional AI](https://arxiv.org/abs/2212.08073) | 2022 | Self-critique against a written constitution. |
+| [AlphaZero](https://arxiv.org/abs/1712.01815) | 2017 | The canonical self-play improvement loop. |
+
+---
+
+## 📊 Benchmarks
+
+Runnable suite in [`benchmarks/`](benchmarks/README.md). **Status is honest**: implemented vs. planned is marked explicitly.
+
+| Metric | What it measures | Status |
+| :--- | :--- | :--- |
+| **COF** — Contradiction & Overwrite Fidelity | Does the agent answer with the *updated* fact, not the stale one, when a preference/endpoint changes mid-history? | ✅ Dataset + schema validation |
+| **NIMS** — Needle in Multi-Turn Session | Can it recall a constraint injected 20/50/100 turns back through noise? | ✅ Dataset + schema validation |
+| **CSST** — Cross-Session Skill Transfer | Does a skill taught in Session 1 actually execute in Session 2? | ✅ Dataset + schema validation |
+| **VSCE** — Verbal Self-Correction Efficiency | Reflection iterations to convergence on a task with an executable verifier. | 🚧 Wanted — see [#7](https://github.com/travisim/awesome-self-improving-agents/issues) |
+| **Adapter parity** | Same agent, swap memory backend, measure delta. | 🚧 Wanted |
+
+```bash
+git clone https://github.com/travisim/awesome-self-improving-agents
+cd awesome-self-improving-agents
+python3 benchmarks/runner/eval_memory.py --validate   # schema check
+python3 benchmarks/runner/eval_memory.py --list       # what's in each dataset
+```
+
+The runner validates datasets and adapter interfaces. It does **not** invent scores — adapter execution produces numbers, and only if you wire one up.
+
+---
+
+## 🏆 Leaderboard — Community-Reported, Unverified
+
+> ⚠️ **This table is not a measurement.** These are community-reported impressions collected from public discussion; no single harness produced them, prompts/versions differ, and none have been reproduced by this repo. They are kept as a *hypothesis list* to be replaced by real adapter runs. Treat every number as unverified. PRs that add a reproducible run (harness + config + logs) are the fastest way to improve this table.
+
+| Model family | Working-memory retention | External-memory adherence | Self-correction | Commonly reported role |
 | :--- | :---: | :---: | :---: | :--- |
-| **Claude 3.7 / 3.5 Sonnet** | 98.4% | 96.8% | 1.2 turns to convergence | **Lead Orchestrator & Self-Correction Engine** |
-| **Gemini 2.0 / 1.5 Pro** | 99.1% (1M+ tokens) | 92.4% | 1.8 turns to convergence | **Raw History Store & Multi-Turn Synthesizer** |
-| **OpenAI o1 / o3-mini** | 96.2% | 94.7% | 1.1 turns (Deep internal verification) | **Complex Problem Decomposer & Memory Validator** |
-| **DeepSeek R1 / V3** | 93.5% | 91.2% | 1.6 turns to convergence | **High-Throughput Worker & Trajectory Distiller** |
+| Claude Sonnet family | *reported high* | *reported high* | *reported low iteration count* | Orchestration + critique |
+| Gemini Pro family | *reported high, large context* | *reported medium* | *reported medium* | Long-history synthesis |
+| OpenAI o-series | *reported high* | *reported high* | *reported low iteration count* | Decomposition + verification |
+| DeepSeek R/V families | *reported medium* | *reported medium* | *reported medium* | High-throughput workers |
+
+Raw record with provenance fields: [`data/leaderboard.json`](data/leaderboard.json). Schema versioning and a `reproduced: true|false` flag are enforced there.
+
+---
+
+## 🗺️ Roadmap & Good First Issues
+
+- [ ] Implement the VSCE dataset and scoring spec — [#7](https://github.com/travisim/awesome-self-improving-agents/issues)
+- [ ] Write the Zep / Graphiti deep-dive and adapter — [#5](https://github.com/travisim/awesome-self-improving-agents/issues)
+- [ ] Write the HippoRAG paper summary and adapter stub — [#6](https://github.com/travisim/awesome-self-improving-agents/issues)
+- [ ] Adapter parity harness (swap backends behind one `MemoryAdapter` interface)
+- [ ] Replace the community leaderboard with reproducible runs
+
+See all open issues: [issues](https://github.com/travisim/awesome-self-improving-agents/issues)
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Whether you want to:
-- Add a new memory framework or research paper
-- Implement a benchmark adapter for your favorite memory engine
-- Add new test cases to the benchmark dataset
-
-Please check out our [CONTRIBUTING.md](CONTRIBUTING.md) to get started!
+Add a framework, a paper, a benchmark scenario, or an adapter implementation — see [CONTRIBUTING.md](CONTRIBUTING.md). Every dataset and paper link is CI-validated.
 
 ---
 
 ## 📄 License
+
 MIT License © 2026 [Travis Sim](https://github.com/travisim)

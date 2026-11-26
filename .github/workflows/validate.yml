@@ -1,19 +1,62 @@
-name: Validate Benchmarks & Datasets
+name: Validate Datasets
 
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate Datasets & Run Evaluator
+
+      - name: Validate benchmark datasets
+        run: python3 benchmarks/runner/eval_memory.py --validate
+
+      - name: Check adapter interface imports
+        run: python3 benchmarks/runner/eval_memory.py --list-adapters
+
+      - name: Validate leaderboard provenance
         run: |
-          python3 benchmarks/runner/eval_memory.py --dry-run
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          data = json.loads(Path("data/leaderboard.json").read_text())
+          errors = []
+
+          if data.get("schema_version") != 2:
+              errors.append("leaderboard schema_version must be 2")
+
+          for row in data.get("models", []):
+              name = row.get("model", "<unnamed>")
+              if row.get("reproduced"):
+                  missing = [k for k in ("harness", "config", "logs") if not row.get(k)]
+                  if missing:
+                      errors.append(f"{name}: reproduced=true but missing {missing}")
+              else:
+                  numeric = ("in_context_working_memory", "external_memory_adherence",
+                             "self_correction_efficiency_turns")
+                  filled = [k for k in numeric if row.get(k) is not None]
+                  if filled:
+                      errors.append(
+                          f"{name}: unverified row must not carry numeric scores {filled}"
+                      )
+
+          if errors:
+              print("Leaderboard provenance check failed:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          print(f"Leaderboard OK: {len(data.get('models', []))} rows, all provenance-consistent.")
+          PY
+
+      - name: Compile Python sources
+        run: python3 -m compileall -q benchmarks/runner
