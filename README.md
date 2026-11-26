@@ -245,7 +245,7 @@ Each is small, self-contained, and has acceptance criteria written into the issu
 
 Or browse [`good first issue`](https://github.com/travisim/awesome-self-improving-agents/labels/good%20first%20issue) · all [open issues](https://github.com/travisim/awesome-self-improving-agents/issues)
 
-First PR? [CONTRIBUTING.md](CONTRIBUTING.md) has the local workflow, the quality bar, and the rules for each contribution type. Reviews are usually within a few days; small, well-scoped PRs move fastest.
+First PR? **[docs/your-first-pr.md](docs/your-first-pr.md)** walks one task from fork to merge in ~30 minutes. [CONTRIBUTING.md](CONTRIBUTING.md) has the quality bar for each contribution type. Reviews are usually within a few days; small, well-scoped PRs move fastest.
 
 ---
 
