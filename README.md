@@ -233,7 +233,19 @@ Raw record with provenance fields: [`data/leaderboard.json`](data/leaderboard.js
 - [ ] Adapter parity harness (swap backends behind one `MemoryAdapter` interface)
 - [ ] Replace the community leaderboard with reproducible runs
 
-See all open issues: [issues](https://github.com/travisim/awesome-self-improving-agents/issues)
+### New here? Start with one of these
+
+Each is small, self-contained, and has acceptance criteria written into the issue:
+
+| Issue | What you'd do | Effort |
+| :--- | :--- | :--- |
+| [#8](https://github.com/travisim/awesome-self-improving-agents/issues/8) | Add a worked COF scoring example to `benchmarks/README.md` | Docs only |
+| [#9](https://github.com/travisim/awesome-self-improving-agents/issues/9) | Add `--json` output to the dataset validator | ~30 lines Python |
+| [#10](https://github.com/travisim/awesome-self-improving-agents/issues/10) | Add two NIMS scenarios at 25 and 75 turns | Data only |
+
+Or browse [`good first issue`](https://github.com/travisim/awesome-self-improving-agents/labels/good%20first%20issue) · all [open issues](https://github.com/travisim/awesome-self-improving-agents/issues)
+
+First PR? [CONTRIBUTING.md](CONTRIBUTING.md) has the local workflow, the quality bar, and the rules for each contribution type. Reviews are usually within a few days; small, well-scoped PRs move fastest.
 
 ---
 
